@@ -11,9 +11,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 
-import com.bigkoo.pickerview.utils.PickerViewAnimateUtil;
 import com.bigkoo.pickerview.R;
 import com.bigkoo.pickerview.listener.OnDismissListener;
+import com.bigkoo.pickerview.utils.PickerViewAnimateUtil;
 
 /**
  * Created by Sai on 15/11/22.
@@ -34,7 +34,7 @@ public class BasePickerView {
 
     private Animation outAnim;
     private Animation inAnim;
-    private boolean showing;
+    private boolean isShowing;
     private int gravity = Gravity.BOTTOM;
 
     public BasePickerView(Context context){
@@ -78,21 +78,24 @@ public class BasePickerView {
         if (isShowing()) {
             return;
         }
-        showing = true;
+        isShowing = true;
         onAttached(rootView);
+        rootView.requestFocus();
     }
     /**
      * 检测该View是不是已经添加到根视图
      * @return 如果视图已经存在该View返回true
      */
     public boolean isShowing() {
-        View view = decorView.findViewById(R.id.outmost_container);
-        return (view != null&&showing);
+        return rootView.getParent() != null || isShowing;
     }
+
     public void dismiss() {
-        if (dismissing&&!showing) {
+        if (dismissing) {
             return;
         }
+
+        dismissing = true;
 
         //消失动画
         outAnim.setAnimationListener(new Animation.AnimationListener() {
@@ -106,13 +109,7 @@ public class BasePickerView {
                 decorView.post(new Runnable() {
                     @Override
                     public void run() {
-                        //从activity根视图移除
-                        decorView.removeView(rootView);
-                        showing = false;
-                        dismissing = false;
-                        if (onDismissListener != null) {
-                            onDismissListener.onDismiss(BasePickerView.this);
-                        }
+                        dismissImmediately();
                     }
                 });
             }
@@ -123,7 +120,17 @@ public class BasePickerView {
             }
         });
         contentContainer.startAnimation(outAnim);
-        dismissing = true;
+    }
+
+    public void dismissImmediately() {
+        //从activity根视图移除
+        decorView.removeView(rootView);
+        isShowing = false;
+        dismissing = false;
+        if (onDismissListener != null) {
+            onDismissListener.onDismiss(BasePickerView.this);
+        }
+
     }
     public Animation getInAnimation() {
         int res = PickerViewAnimateUtil.getAnimationResource(this.gravity, true);
@@ -140,7 +147,31 @@ public class BasePickerView {
         return this;
     }
 
-    public BasePickerView setCancelable(boolean isCancelable) {
+    /*public BasePickerView setKeyBackCancelable(boolean isCancelable) {
+        rootView.setFocusable(isCancelable);
+        rootView.setFocusableInTouchMode(isCancelable);
+        if (isCancelable) {
+            rootView.setOnKeyListener(onKeyBackListener);
+        }
+        else{
+            rootView.setOnKeyListener(null);
+        }
+        return this;
+    }
+
+    private View.OnKeyListener onKeyBackListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == MotionEvent.ACTION_DOWN
+                    && isShowing()){
+                dismiss();
+                return true;
+            }
+            return false;
+        }
+    } ;*/
+
+    protected BasePickerView setOutSideCancelable(boolean isCancelable) {
         View view = rootView.findViewById(R.id.outmost_container);
 
         if (isCancelable) {

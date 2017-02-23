@@ -27,11 +27,13 @@ public class WheelTime {
     private int gravity;
 
     private Type type;
-    public static final int DEFULT_START_YEAR = 1990;
+    public static final int DEFULT_START_YEAR = 1900;
     public static final int DEFULT_END_YEAR = 2100;
     private int startYear = DEFULT_START_YEAR;
     private int endYear = DEFULT_END_YEAR;
 
+    // 根据屏幕密度来指定选择器字体的大小(不同屏幕可能不同)
+    private int textSize = 18;
 
     public WheelTime(View view) {
         super();
@@ -40,11 +42,12 @@ public class WheelTime {
         setView(view);
     }
 
-    public WheelTime(View view, Type type, int gravity) {
+    public WheelTime(View view, Type type, int gravity ,int textSize) {
         super();
         this.view = view;
         this.type = type;
         this.gravity = gravity;
+        this.textSize = textSize;
         setView(view);
     }
 
@@ -99,7 +102,7 @@ public class WheelTime {
         //分
         wv_mins = (WheelView) view.findViewById(R.id.min);
         wv_mins.setAdapter(new NumericWheelAdapter(0, 59));
-        wv_mins.setLabel(context.getString(R.string.pickerview_minutes));// 添加文字
+       wv_mins.setLabel(context.getString(R.string.pickerview_minutes));// 添加文字
         wv_mins.setCurrentItem(m);
         wv_mins.setGravity(gravity);
         //秒
@@ -172,45 +175,62 @@ public class WheelTime {
         wv_year.setOnItemSelectedListener(wheelListener_year);
         wv_month.setOnItemSelectedListener(wheelListener_month);
 
-        // 根据屏幕密度来指定选择器字体的大小(不同屏幕可能不同)
-        int textSize = 6;
         switch (type) {
             case ALL:
-                textSize = textSize * 3;
+               /* textSize = textSize * 3;*/
                 break;
             case YEAR_MONTH_DAY:
-                textSize = textSize * 4;
+               /* textSize = textSize * 4;*/
                 wv_hours.setVisibility(View.GONE);
                 wv_mins.setVisibility(View.GONE);
                 wv_seconds.setVisibility(View.GONE);
                 break;
             case HOURS_MINS:
-                textSize = textSize * 4;
+                /*textSize = textSize * 4;*/
                 wv_year.setVisibility(View.GONE);
                 wv_month.setVisibility(View.GONE);
                 wv_day.setVisibility(View.GONE);
                 wv_seconds.setVisibility(View.GONE);
                 break;
             case MONTH_DAY_HOUR_MIN:
-                textSize = textSize * 3;
+               /* textSize = textSize * 3;*/
                 wv_year.setVisibility(View.GONE);
                 wv_seconds.setVisibility(View.GONE);
                 break;
             case YEAR_MONTH:
-                textSize = textSize * 4;
+               /* textSize = textSize * 4;*/
                 wv_day.setVisibility(View.GONE);
                 wv_hours.setVisibility(View.GONE);
                 wv_mins.setVisibility(View.GONE);
                 wv_seconds.setVisibility(View.GONE);
         }
+        setContentTextSize();
+    }
+
+    private void setContentTextSize() {
         wv_day.setTextSize(textSize);
         wv_month.setTextSize(textSize);
         wv_year.setTextSize(textSize);
         wv_hours.setTextSize(textSize);
         wv_mins.setTextSize(textSize);
         wv_seconds.setTextSize(textSize);
-
     }
+
+    public void setLabels(String label_year, String label_month, String label_day, String label_hours, String label_mins, String label_seconds) {
+        if (label_year != null)
+            wv_year.setLabel(label_year);
+        if (label_month != null)
+            wv_month.setLabel(label_month);
+        if (label_day != null)
+            wv_day.setLabel(label_day);
+        if (label_hours != null)
+            wv_hours.setLabel(label_hours);
+        if (label_mins != null)
+            wv_mins.setLabel(label_mins);
+        if (label_seconds != null)
+            wv_seconds.setLabel(label_seconds);
+    }
+
 
     /**
      * 设置是否循环滚动
